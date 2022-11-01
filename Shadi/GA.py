@@ -99,11 +99,8 @@ def genetic_algorithm(fitness_function, bounds, n_bits, Generations, n_pop, r_cr
 def plot():
 	fig, ax = plt.subplots(figsize=(10, 10))
 	ax.plot(best_fit_v, label='Best Fitness')
-	# plt.plot(gen, best_fit_v)
 	ax.plot(worst_fit_v, label='Worst Fitness')
-	# plt.plot(gen, worst_fit_v)
 	ax.plot(avg_fit_v, label='Average Fitness')
-	# plt.plot(gen, avg_fit_v)
 	plt.xlabel('Generations')
 	plt.ylabel('Fitness')
 	plt.title('Fitness Evolution')
