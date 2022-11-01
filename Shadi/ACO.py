@@ -1,9 +1,9 @@
 from sklearn.model_selection import cross_val_score
 from sklearn import svm
-from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_digits
-from sklearn.metrics import accuracy_score
-import matplotlib.pyplot as plt 
+import pants
+import random
+
 # data importing 
 data = load_digits() 
 
@@ -11,8 +11,6 @@ n_samples = len(data.images)
 X = data.images.reshape((n_samples, -1))
 Y = data['target']
 
-import pants
-import random
 
 nodes = []
 for _ in range(20):
@@ -26,7 +24,7 @@ def fitness_function(x,y):
 	scores = cross_val_score(clf, X, Y, cv=5)
 	
 	return scores.mean()  
-
+#------------------------------------------------------------------------------------------------------------
 world = pants.World(nodes, fitness_function)
 
 solver = pants.Solver()

@@ -5,10 +5,9 @@ import matplotlib.pyplot as plt
 
 # for ploting
 
-worst_fit = []
-best_fit = []
-avg_fit = []
-
+worst_fit_v = []
+best_fit_v = []
+avg_fit_v = []
 # decode bitstring to numbers
 def decode(bounds, n_bits, bitstring):
 	decoded = list()
@@ -70,9 +69,10 @@ def genetic_algorithm(fitness_function, bounds, n_bits, Generations, n_pop, r_cr
 		decoded = [decode(bounds, n_bits, p) for p in pop]
 		# evaluate all candidates in the population
 		Fitness = [fitness_function(d) for d in decoded]
-		best_fit.append(max(Fitness))
-		worst_fit.append(min(Fitness))
-		avg_fit.append(sum(Fitness) / len(Fitness))
+		# for ploting the fitness
+		worst_fit_v.append(min(Fitness))
+		best_fit_v.append(max(Fitness))
+		avg_fit_v.append(sum(Fitness) / len(Fitness))
 		# check for new best solution
 		for i in range(n_pop):
 			if Fitness[i] > best_fit:
@@ -97,12 +97,16 @@ def genetic_algorithm(fitness_function, bounds, n_bits, Generations, n_pop, r_cr
 
 # Ploting 
 def plot():
-	_, axis = plt.subplots(1,1)
-	axis[0].plot(best_fit, label='Best Fitness')
-	axis[0].plot(worst_fit, label='Worst Fitness')
-	axis[0].plot(avg_fit, label='Average Fitness')
-	axis[0].set_xlabel('Generations')
-	axis[0].set_ylabel('Fitness')
-	axis[0].set_title('Fitness Evolution')
-	axis[0].legend()
-	plt.show()
+	fig, ax = plt.subplots(figsize=(10, 10))
+	ax.plot(best_fit_v, label='Best Fitness')
+	# plt.plot(gen, best_fit_v)
+	ax.plot(worst_fit_v, label='Worst Fitness')
+	# plt.plot(gen, worst_fit_v)
+	ax.plot(avg_fit_v, label='Average Fitness')
+	# plt.plot(gen, avg_fit_v)
+	plt.xlabel('Generations')
+	plt.ylabel('Fitness')
+	plt.title('Fitness Evolution')
+	plt.legend()
+	plt.savefig('Fitness Evalution.png')
+	plt.close()

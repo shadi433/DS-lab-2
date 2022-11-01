@@ -2,8 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from math import gamma
 
-###########################  CSO CLASS  ########################################
-
 class CSO:
 
     def __init__(self, fitness, n_pop=10, n=2, pa=0.25, beta=1.5, bound=None, 
@@ -19,12 +17,6 @@ class CSO:
         beta: LEVY PARAMETER
         bound: AXIS BOUND FOR EACH DIMENSION
         X: PARTICLE POSITION OF SHAPE (P,n)
-        ################ EXAMPLE #####################
-        
-        If ith egg Xi = [x,y,z], n = 3, and if
-        bound = [(-5,5),(-1,1),(0,5)]
-        Then, x∈(-5,5); y∈(-1,1); z∈(0,5)
-        ##############################################
         Generations: MAXIMUM ITERATION
         best: GLOBAL BEST POSITION OF SHAPE (n,1)
         
@@ -55,31 +47,17 @@ class CSO:
     def update_position_1(self):
         
         '''
-        
-        ACTION:
         TO CALCULATE THE CHANGE OF POSITION 'X = X + rand*C' USING LEVY FLIGHT METHOD
-        C = 0.01*S*(X-best) WHERE S IS THE RANDOM STEP, and β = beta (TAKEN FROM [1])
-              u
-        S = -----
-                1/β
-             |v|
-        beta = 1.5
-        u ~ N(0,σu) # NORMAL DISTRIBUTION WITH ZERO MEAN AND 'σu' STANDARD DEVIATION
-        v ~ N(0,σv) # NORMAL DISTRIBUTION WITH ZERO MEAN AND 'σv' STANDARD DEVIATION
-        σv = 1
+        C = 0.01*S*(X-best) WHERE S IS THE RANDOM STEP
         
-                     Γ(1+β)*sin(πβ/2)       
-        σu^β = --------------------------
-                   Γ((1+β)/2)*β*(2^((β-1)/2))
-        Γ IS THE GAMMA FUNCTION
         '''
 
         num = gamma(1+self.beta)*np.sin(np.pi*self.beta/2)
         den = gamma((1+self.beta)/2)*self.beta*(2**((self.beta-1)/2))
-        σu = (num/den)**(1/self.beta)
-        σv = 1
-        u = np.random.normal(0, σu, self.n)
-        v = np.random.normal(0, σv, self.n)
+        segma_u = (num/den)**(1/self.beta)
+        segma_v = 1
+        u = np.random.normal(0, segma_u, self.n)
+        v = np.random.normal(0, segma_v, self.n)
         S = u/(np.abs(v)**(1/self.beta))
 
         # DEFINING GLOBAL BEST SOLUTION BASED ON FITNESS VALUE
@@ -98,13 +76,9 @@ class CSO:
     def update_position_2(self):
         
         '''
-        
-        ACTION:
         TO REPLACE SOME NEST WITH NEW SOLUTIONS
         HOST BIRD CAN THROW EGG AWAY (ABANDON THE NEST) WITH FRACTION
-        
         pa ∈ [0,1] (ALSO CALLED ASSIGNED PROBABILITY) AND BUILD A COMPLETELY 
-        
         NEW NEST. FIRST WE CHOOSE A RANDOM NUMBER r ∈ [0,1] AND IF r < pa,
         THEN 'X' IS SELECTED AND MODIFIED ELSE IT IS KEPT AS IT IS. 
         '''
@@ -138,23 +112,11 @@ class CSO:
     def execute(self):
 
         '''
-        
-        PARAMETERS:
         t: ITERATION NUMBER
-        
         fitness_time: LIST STORING FITNESS (OR COST) VALUE FOR EACH ITERATION
-        
         time: LIST STORING ITERATION NUMBER ([0,1,2,...])
         
-        ACTION:
-        
-        AS THE NAME SUGGESTS, THIS FUNCTION EXECUTES CUCKOO SEARCH ALGORITHM
-        
-        BASED ON THE TYPE OF PROBLEM (MAXIMIZATION OR MINIMIZATION).
-        NOTE: THIS FUNCTION PRINTS THE GLOBAL FITNESS VALUE FOR EACH ITERATION
-        
-        IF THE VERBOSE IS TRUE
-        
+        THIS FUNCTION EXECUTES CUCKOO SEARCH ALGORITHM
         '''
 
         self.fitness_time, self.time = [], []
