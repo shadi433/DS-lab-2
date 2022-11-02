@@ -98,10 +98,10 @@ def ABC(bounds, n_pop, Cycles, fitness_function, Fit=Fit):
       #evaluation of the new generated solution and update of the trial vector
       fit = fitness_function(vij)
       if fit > f:
-        emp_pop['C'].loc[i], emp_pop['gamma'].loc[i] = vij[0], vij[1]
-        emp_pop['trial'].loc[i] = 0
+        emp_pop.loc[i, ['C']], emp_pop.loc[i, ['gamma']] = vij[0], vij[1]
+        emp_pop.loc[i, ['trial']] = 0
       else:
-        emp_pop['trial'].loc[i] = trial + 1
+        emp_pop.loc[i, ['trial']] = trial + 1
         # if emp_pop['trial'].loc[i]>=limit:
         #   emp_pop['scout'].loc[i] = 1
     
@@ -140,10 +140,10 @@ def ABC(bounds, n_pop, Cycles, fitness_function, Fit=Fit):
       #evaluation of the new generated solution and update of the trial vector
       fit = fitness_function(vij)
       if fit > f:
-        emp_pop['C'].loc[i], emp_pop['gamma'].loc[i] = vij[0], vij[1]
-        emp_pop['trial'].loc[i] = 0
+        emp_pop.loc[i, ['C']], emp_pop.loc[i, ['gamma']] = vij[0], vij[1]
+        emp_pop.loc[i, ['trial']] = 0
       else:
-        emp_pop['trial'].loc[i] = trial + 1
+        emp_pop.loc[i, ['trial']] = trial + 1
         # if emp_pop['trial'].loc[i]>=limit:
         #   emp_pop['scout'].loc[i] = 1
     
@@ -170,12 +170,12 @@ def ABC(bounds, n_pop, Cycles, fitness_function, Fit=Fit):
     XGmax = emp_pop['gamma'].max()
 
     for index in scout_indexes:
-      emp_pop["C"].loc[index] = max(XCmin,min(XCmax,XCmin + random.uniform(0,1)*(XCmax - XCmin)))
-      c = emp_pop["C"].loc[index]
-      emp_pop["gamma"].loc[index] = max(XGmin, min(XGmax,XGmin + random.uniform(0,1)*(XGmax - XGmin)))
-      gamma = emp_pop["gamma"].loc[index]
-      emp_pop["Fit"].loc[index] = Fit(fitness_function([c, gamma]))
-      emp_pop["trial"].loc[index], emp_pop["prob"].loc[index] = 0,0
+      emp_pop.loc[index, ["C"]] = max(XCmin,min(XCmax,XCmin + random.uniform(0,1)*(XCmax - XCmin)))
+      c = emp_pop.loc[index, ["C"]]
+      emp_pop.loc[index, ["gamma"]] = max(XGmin, min(XGmax,XGmin + random.uniform(0,1)*(XGmax - XGmin)))
+      gamma = emp_pop.loc[index, ["gamma"]]
+      emp_pop.loc[index, ["Fit"]] = Fit(fitness_function([c, gamma]))
+      emp_pop.loc[index, ["trial"]], emp_pop.loc[index, ["prob"]] = 0,0
 
     #keeping tracking the best solution:
     if emp_pop["Fit"].max()>best_fit:
