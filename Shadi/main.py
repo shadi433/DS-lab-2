@@ -20,12 +20,12 @@ r_mut = 1.0 / (float(n_bits) * len(bounds))
 #--------------------------------------------------------------------------------------------------------
 # perform the genetic algorithm search
 
-best_para, best_fit = genetic_algorithm(fitness_function, bounds, n_bits, Generations, n_pop, r_cross, r_mut)
-print('Done!')
-decoded = decode(bounds, n_bits, best_para)
-print('best_parameters:%s' % decoded)
-plot()
+# best_para, best_fit = genetic_algorithm(fitness_function, bounds, n_bits, Generations, n_pop, r_cross, r_mut)
+# print('Done!')
+# decoded = decode(bounds, n_bits, best_para)
+# print('best_parameters:%s' % decoded)
+# plot()
 
 #--------------------------------------------------------------------------------------------------------
 
-# CSO(fitness=fitness_function, bound=[(1.0, 10.0),(0.0001, 0.1)], n_pop=n_pop, Generations=Generations, verbose=True).execute()
+CSO(fitness=fitness_function, bound=[(1.0, 10.0),(0.001, 0.1)], n_pop=n_pop, Generations=Generations, verbose=True).execute()
