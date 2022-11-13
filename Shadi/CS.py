@@ -43,6 +43,7 @@ class CSO:
             self.X = np.array(self.X).T
         else:
             self.X = np.random.randn(n_pop,n)
+            self.clip_X()
 
     def update_position_1(self):
         
@@ -70,8 +71,13 @@ class CSO:
 
         Xnew = self.X.copy()
         for i in range(self.P):
-            Xnew[i,:] += np.random.randn(self.n)*0.01*S*(Xnew[i,:]-self.best) 
+            Xnew[i,:] += np.random.randn(self.n)*0.01*S*(Xnew[i,:]-self.best)
+            if self.bound is not None:
+                for j in range(self.n):
+                    xmin, xmax = self.bound[j]
+                    Xnew[:,j] = np.clip(Xnew[:,j], xmin, xmax)
             self.X[i,:] = self.optimum(Xnew[i,:], self.X[i,:])
+            self.clip_X()
 
     def update_position_2(self):
         
@@ -90,7 +96,11 @@ class CSO:
             for j in range(self.n):
                 r = np.random.rand()
                 if r < self.pa:
-                    Xnew[i,j] += np.random.rand()*(Xold[d1,j]-Xold[d2,j]) 
+                    Xnew[i,j] += np.random.rand()*(Xold[d1,j]-Xold[d2,j])
+                    if self.bound is not None:
+                        for k in range(self.n):
+                            xmin, xmax = self.bound[k]
+                            Xnew[:,k] = np.clip(Xnew[:,k], xmin, xmax)
             self.X[i,:] = self.optimum(Xnew[i,:], self.X[i,:])
     
     def optimum(self, best, particle_x):

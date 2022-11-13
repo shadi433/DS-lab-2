@@ -3,11 +3,12 @@
 import numpy as np
 import random
 import math
-import collections
-import operator
 import time
 import progressbar
 import matplotlib.pyplot as plt
+from sklearn import svm
+from sklearn.datasets import load_digits
+from sklearn.model_selection import cross_val_score
 
 
 
@@ -156,12 +157,18 @@ class InvasiveWeed(): # Define class with model name
     # Get fitness of new seeds
     def get_fitness(self,seed_array):
         fitness_array = [] # Initiate fitness array for new seeds
+
+        data = load_digits() 
+        n_samples = len(data.images)
+        X = data.images.reshape((n_samples, -1))
+        Y = data['target']
+
         for seed in seed_array:
-            x = seed[0] #  X coordinate
-            y = seed[1] #  Y coordinate
-            
-            # Functon to convert x and y coordinates into a fitness value
-            fitness = ( x * math.sin(4*x) ) + ( 1.1 * y * math.sin( 2 * y) )
+            # modle implementation
+            # seed[0] = C and seed[1] = gamma
+            clf = svm.SVC(kernel='rbf', C=seed[0], gamma=seed[1], random_state=42)
+            scores = cross_val_score(clf, X, Y, cv=5)
+            fitness = scores.mean()
             
             # Append fitness to the fitness array
             fitness_array.append(fitness)
