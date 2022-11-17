@@ -15,7 +15,7 @@ from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score
 
 class ABC():
-  def __init__(self, bounds, n_pop, cycles, model):
+  def __init__(self, bounds, n_pop, cycles, model, X, Y):
     
     self.bounds = bounds
     self.n_pop = n_pop
@@ -35,6 +35,9 @@ class ABC():
     self.best = 0
 
     self.model = SVC
+
+    self.X = X
+    self.Y = Y
 
     def __cal__(self):
       emp_pop_list = self.init_pop()
@@ -115,9 +118,9 @@ class ABC():
         vij[self.params.index(p)] = v
       return vij
     
-    def fitness_function(self, vij):
+    def fitness_function(self, x):
         clf = self.model(kernel='rbf', C=x[0], gamma=x[1], random_state=42)
-        scores = cross_val_score(clf, X, Y, cv=5)
+        scores = cross_val_score(clf, self.X, self.Y, cv=5)
 
         return scores.mean()
     def keep_track_best_sol(emp_pop, best_fit, best_sol_index):
