@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 import random
 
-class de:
+class DE:
   def __init__(self, bounds, generations, n_pop, params, CR, model, X, Y):
     self.bounds = bounds
     self.generations = generations
