@@ -26,8 +26,8 @@ class DE:
   
   def __call__(self):
     #population generation
-    XCmin, XGmin = bounds[0][0], bounds[1][0]
-    XCmax, XGmax  = bounds[0][1], bounds[1][1]
+    XCmin, XGmin = self.bounds[0][0], self.bounds[1][0]
+    XCmax, XGmax  = self.bounds[0][1], self.bounds[1][1]
 
     population = pd.DataFrame()
 
