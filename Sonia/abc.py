@@ -10,43 +10,26 @@ Original file is located at
 import pandas as pd
 import numpy as np
 import random
+from swarm import swarm_opt
 
-class ABC:
-  def __init__(self, bounds, n_pop, cycles, fitness_function, population = None):
-    
-    self.bounds = bounds
-    self.n_pop = n_pop
-    self.cycles = cycles
-    self.fitness_function = fitness_function
+class ABC(swarm_opt):
+  def __init__(self, swarm):
+    super().__init__(swarm.bounds, swarm.n_pop, swarm.cycles, swarm.fitness_function)
+    self.population['trial'] = 0
+    self.population['prob'] = 0
+
     self.dim = len(self.bounds.keys())
-    self.population = population
-
     #defining the limit of the trial vector = (Np * D)
-    self.limit = self.n_pop * self.dim  
+    self.limit = self.n_pop * self.dim 
 
-    if population == None:
-      #populaiton generation
-      self.emp_pop_dict = self.init_pop()
-      self.emp_pop = pd.DataFrame.from_dict(self.emp_pop_dict)
-      #calculating the Fit of the initialised population (employed bees)
-      self.emp_pop['Fit'] = [fitness_function(x) for x in list(zip(*self.emp_pop_dict.values()))]
-      #initialization of the trial vector
-      self.emp_pop['trial'] = 0
-    else:
-      self.emp_pop = pd.DataFrame.from_dict(self.population)
-      self.emp_pop['Fit'] = [fitness_function(x) for x in list(zip(*self.population.values()))]
-      self.emp_pop['trial'] = 0
-
-    # keep track of best solution
-    self.best = 0
-    self.best_para, self.best_fit = self.keep_track(self.emp_pop["Fit"].idxmax())
-    self.emp_pop["prob"] = 0
-    # print("init done, cycle entering")
   def __call__(self):
+    
+    self.keep_track(self.population['Fit'].idxmax())
+    
     for _ in range(self.cycles):
-      if self.population == None:
-        #produce new solution Vij for employed beed
-        self.produce_new_sol()
+
+      #produce new solution Vij for employed beed
+      self.produce_new_sol()
       
       #we suppose that the onlooker bees will be in the same position
       #as the employed bees
@@ -56,77 +39,56 @@ class ABC:
       self.produce_new_sol(onlookers=True)
 
       #generate new solution for the scout bees if exists:
-      scout_indexes = self.emp_pop[self.emp_pop['trial']>=self.limit].index.values
+      scout_indexes = self.population[self.population['trial']>=self.limit].index.values
       if len(scout_indexes) == 0:
         continue
       
       self.produce_new_sol_scout(scout_indexes)
     return self.best_para, self.best_fit
-  
-  def init_pop(self):
-    emp_pop_dict = dict()
-    for i in range(self.n_pop):
-      for key in self.bounds.keys():
-        if i == 0:
-          emp_pop_dict[key] = [bounds[key][0] + random.uniform(0,1)*(bounds[key][-1] - bounds[key][0])]
-        else:
-          emp_pop_dict[key].append(self.bounds[key][0] + random.uniform(0,1)*(self.bounds[key][-1] - self.bounds[key][0]))
-    return emp_pop_dict
-  
-  def keep_track(self, best_sol_index):
-    best_para = [{key: self.emp_pop[key].loc[best_sol_index]} for key in self.bounds.keys()]
-    best_fit = self.emp_pop["Fit"].loc[best_sol_index]
-    print(f"{self.best}, best fit: {best_fit}.")
-    print(f'best params: ', best_para)
-    return best_para, best_fit
 
   def produce_new_sol(self, onlookers=False):
-    for i, _ in self.emp_pop.iterrows():
-        if onlookers == True and random.uniform(0,1) > self.emp_pop[i, ['prob']]:
+    for i, _ in self.population.iterrows():
+        if onlookers == True and random.uniform(0,1) > self.population.loc[i, 'prob']:
           continue
-        indexes = list(self.emp_pop.index)
+        indexes = list(self.population.index)
         indexes.remove(i)
         k = random.choice(indexes)
         param = list(set(random.choices(list(self.bounds.keys()), k = len(self.bounds.keys()))))
-        v = self.emp_pop[list(bounds.keys())].loc[i].to_dict()
+        v = self.population[list(self.bounds.keys())].loc[i].to_dict()
         for p in param:
-          x = self.emp_pop[p].loc[i] + random.uniform(0,1)*(self.emp_pop[p].loc[i] - self.emp_pop[p].loc[k])
+          x = self.population[p].loc[i] + random.uniform(0,1)*(self.population[p].loc[i] - self.population[p].loc[k])
           v[p] = self.clip(p, x)
         
         #evaluation of the new generated solution and update of the trial vector
         fit = self.fitness_function(list(v.values()))
-        if fit > self.emp_pop['Fit'].loc[i]:
+        if fit > self.population['Fit'].loc[i]:
           for p in param:
-            self.emp_pop.loc[i, [p]] = v[p]
-          self.emp_pop.loc[i, ['Fit']] = fit
-          self.emp_pop.loc[i, ['trial']] = 0
+            self.population.loc[i, [p]] = v[p]
+          self.population.loc[i, 'Fit'] = fit
+          self.population.loc[i, 'trial'] = 0
         else:
-          self.emp_pop.loc[i, ['trial']] = self.emp_pop.loc[i, ['trial']] + 1
+          self.population.loc[i, 'trial'] = self.population['trial'].loc[i] + 1
       
-    if self.emp_pop['Fit'].max()> self.best_fit:
+    if self.population['Fit'].max()> self.best_fit:
       self.best += 1
-      self.best_para, self.best_fit = self.keep_track(self.emp_pop['Fit'].idxmax())
+      self.keep_track(self.population['Fit'].idxmax())
       
     #Probability values for the solutions Xij
-    self.emp_pop['prob'] = [f/sum(self.emp_pop['Fit']) for f in self.emp_pop['Fit']]
-      
+    self.population['prob'] = [f/sum(self.population['Fit']) for f in self.population['Fit']] 
+  
   def produce_new_sol_scout(self, scout_indexes):
-
     for idx in scout_indexes:
       for param in self.bounds.keys():
-        x_min = self.emp_pop[param].min()
-        x_max = self.emp_pop[param].max()
+        x_min = self.population[param].min()
+        x_max = self.population[param].max()
         x = x_min + random.uniform(0,1)*(x_max - x_min)
-        self.emp_pop.loc[idx, [param]] = self.clip(param, x)
-      self.emp_pop.loc[idx, ['Fit']] = self.fitness_function(self.emp_pop.loc[idx, [self.bounds.keys()]])
-      self.emp_pop.loc[idx, ['trial']], self.emp_pop.loc[idx, ['prob']] = 0,0
+        self.population.loc[idx, [param]] = self.clip(param, x)
+      self.population.loc[idx, 'Fit'] = self.fitness_function(self.population.loc[idx, [self.bounds.keys()]])
+      self.population.loc[idx, 'trial'], self.population.loc[idx, 'prob'] = 0,0
     
-    if self.emp_pop['Fit'].max()> self.best_fit:
+    if self.population['Fit'].max()> self.best_fit:
       self.best += 1
-      self.best_para, self.best_fit = self.keep_track(self.emp_pop['Fit'].idxmax())
-     
-  def clip(self, param, x):
-    return max(self.bounds[param][0], min(self.bounds[param][-1], x))
+      self.keep_track(self.population['Fit'].idxmax())
 
 if __name__ == '__main__':
   from sklearn.datasets import load_digits
@@ -148,4 +110,4 @@ if __name__ == '__main__':
   n_pop = 10
   cycles = 10
 
-  ABC(bounds, n_pop, cycles, fitness_function)
+  swarm = swarm_opt(bounds, n_pop, cycles, fitness_function)
