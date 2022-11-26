@@ -111,3 +111,6 @@ if __name__ == '__main__':
   cycles = 10
 
   swarm = swarm_opt(bounds, n_pop, cycles, fitness_function)
+
+  abc = ABC(swarm)
+  abc()
