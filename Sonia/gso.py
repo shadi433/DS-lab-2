@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 import random
 from scipy.special import logsumexp
-from swarm import SWARM_OPT
+from swarm import swarm_opt
 
 np.seterr(all="ignore")
 
