@@ -50,8 +50,8 @@ class swarm_opt:
   def keep_track(self, best_sol_index):
     self.best_para = [{key: self.population[key].loc[best_sol_index]} for key in self.bounds.keys()]
     self.best_fit = self.population["Fit"].loc[best_sol_index]
-    print(f"{self.best}, best fit: {self.best_fit}.")
-    print(f'best params: ', self.best_para)
+    #print(f"{self.best}, best fit: {self.best_fit}.")
+    #print(f'best params: ', self.best_para)
 
   def clip(self, param, x):
     return max(self.bounds[param][0], min(self.bounds[param][-1], x))
