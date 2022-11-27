@@ -26,8 +26,8 @@ class swarm_opt:
       self.pop['Fit'] = [fitness_function(x) for x in list(zip(*self.pop_dict.values()))]
       
     else:
-      self.pop = pd.DataFrame.from_dict(self.population)
-      # self.pop['Fit'] = [fitness_function(x) for x in list(zip(*self.population.values()))]
+      self.pop = pd.DataFrame.from_dict(population)
+      # self.pop['Fit'] = [fitness_function(x) for x in list(zip(*population.values()))]
       # self.pop['trial'] = 0
     self.population = self.pop
 
