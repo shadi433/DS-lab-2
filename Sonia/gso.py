@@ -17,7 +17,12 @@ np.seterr(all="ignore")
 
 class GSO(swarm_opt):
   def __init__(self, rho, gamma, s, rs, r0, betta, l0,swarm):
-    super().__init__(swarm.bounds, swarm.n_pop, swarm.cycles, swarm.fitness_function)
+    super().__init__(swarm.bounds, swarm.n_pop, swarm.cycles, swarm.fitness_function, swarm.population)
+
+    if isinstance(self.population, dict):
+      self.population = pd.DataFrame.from_dict(self.population)
+      self.n_pop = len(self.population)
+      
     self.rho = rho
     self.gamma = gamma
     self.s = s
@@ -64,14 +69,14 @@ class GSO(swarm_opt):
           self.population['neigh'].loc[i].append(j)
   def max_prob_moving(self, i):
     sum_n = 0
-    for k in self.population.loc[i, ['neigh']].values:
+    for k in self.population.loc[i, 'neigh']:
       sum_n += self.population['luciferin'][k] - self.population['luciferin'][i]
-    sum_n = sum(sum_n)
-
+  
     max_prob = 0
-    indexes = list(self.population.index)
-    indexes.remove(i)
-    for j in indexes:
+    #indexes = list(self.population.index)
+    #indexes.remove(i)
+    #for j in indexes:
+    for j in self.population.loc[i, 'neigh']:
       diff_ij = self.population['luciferin'][j] - self.population['luciferin'][i]
       # prob_ij = logsumexp(diff_ij)/logsumexp(sum_n)
       prob_ij = diff_ij/sum_n
@@ -90,7 +95,7 @@ class GSO(swarm_opt):
         x = self.clip(param, x)
         self.population.loc[i, param] = x
       self.population.loc[i, 'Fit'] = self.fitness_function(self.population.loc[i, self.bounds.keys()])
-      self.population.loc[i, 'prob_mov'] = ""
+      self.population.loc[i, 'prob_mov'] = None
       if self.population['Fit'].loc[i] > self.best_fit:
         self.best += 1
         self.keep_track(self.population['Fit'].idxmax())
@@ -99,7 +104,8 @@ class GSO(swarm_opt):
 
     #update the neighborhood range
     self.population.loc[i, 'neigh_rng'] = min(self.rs, max(0, self.population['neigh_rng'][i]+self.betta*(self.n_pop - np.abs(len(self.population['neigh'][i])))))
-
+    #clear neighbors
+    self.population['neigh'].loc[i].clear()
 if __name__ == '__main__':
   from sklearn.datasets import load_digits
   from sklearn.svm import SVC

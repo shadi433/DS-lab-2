@@ -14,7 +14,11 @@ from swarm import swarm_opt
 
 class ABC(swarm_opt):
   def __init__(self, swarm):
-    super().__init__(swarm.bounds, swarm.n_pop, swarm.cycles, swarm.fitness_function)
+    super().__init__(swarm.bounds, swarm.n_pop, swarm.cycles, swarm.fitness_function, swarm.population)
+
+    if isinstance(self.population, dict):
+      self.population = pd.DataFrame.from_dict(self.population)
+      self.n_pop = len(self.population)
     self.population['trial'] = 0
     self.population['prob'] = 0
 
@@ -83,7 +87,7 @@ class ABC(swarm_opt):
         x_max = self.population[param].max()
         x = x_min + random.uniform(0,1)*(x_max - x_min)
         self.population.loc[idx, [param]] = self.clip(param, x)
-      self.population.loc[idx, 'Fit'] = self.fitness_function(self.population.loc[idx, [self.bounds.keys()]])
+      self.population.loc[idx, 'Fit'] = self.fitness_function(self.population.loc[idx, self.bounds.keys()])
       self.population.loc[idx, 'trial'], self.population.loc[idx, 'prob'] = 0,0
     
     if self.population['Fit'].max()> self.best_fit:

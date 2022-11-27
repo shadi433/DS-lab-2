@@ -14,7 +14,10 @@ from swarm import swarm_opt
 
 class DE(swarm_opt):
   def __init__(self, cr, swarm):
-    super().__init__(swarm.bounds, swarm.n_pop, swarm.cycles, swarm.fitness_function)
+    super().__init__(swarm.bounds, swarm.n_pop, swarm.cycles, swarm.fitness_function, swarm.population)
+    if isinstance(self.population, dict):
+      self.population = pd.DataFrame.from_dict(self.population)
+      self.n_pop = len(self.population)
     self.cr = cr
 
   def __call__(self):

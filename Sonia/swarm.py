@@ -17,19 +17,21 @@ class swarm_opt:
     self.n_pop = n_pop
     self.cycles = cycles
     self.fitness_function = fitness_function
+    self.population = population
 
-    if population == None:
+
+    if isinstance(self.population, dict)==False:
       #populaiton generation
       self.pop_dict = self.init_pop()
       self.pop = pd.DataFrame.from_dict(self.pop_dict)
       #calculating the Fit of the initialised population (employed bees)
       self.pop['Fit'] = [fitness_function(x) for x in list(zip(*self.pop_dict.values()))]
-      
-    else:
-      self.pop = pd.DataFrame.from_dict(population)
-      # self.pop['Fit'] = [fitness_function(x) for x in list(zip(*population.values()))]
-      # self.pop['trial'] = 0
-    self.population = self.pop
+      self.population = self.pop
+    #else:
+      #self.pop = pd.DataFrame.from_dict(self.population)
+      #self.pop['Fit'] = [fitness_function(x) for x in list(zip(*self.population.values()))]
+      #self.pop['trial'] = 0
+    
 
     # keep track of best solution
     self.best = 0
@@ -50,8 +52,8 @@ class swarm_opt:
   def keep_track(self, best_sol_index):
     self.best_para = [{key: self.population[key].loc[best_sol_index]} for key in self.bounds.keys()]
     self.best_fit = self.population["Fit"].loc[best_sol_index]
-    # print(f"{self.best}, best fit: {self.best_fit}.")
-    # print(f'best params: ', self.best_para)
+    #print(f"{self.best}, best fit: {self.best_fit}.")
+    #print(f'best params: ', self.best_para)
 
   def clip(self, param, x):
     return max(self.bounds[param][0], min(self.bounds[param][-1], x))

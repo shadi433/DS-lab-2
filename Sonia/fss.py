@@ -17,7 +17,12 @@ np.seterr(all="ignore")
 class FSS(swarm_opt):
   def __init__(self, Sinit, Sfinal, swarm):
     
-    super().__init__(swarm.bounds, swarm.n_pop, swarm.cycles, swarm.fitness_function)
+    super().__init__(swarm.bounds, swarm.n_pop, swarm.cycles, swarm.fitness_function, swarm.population)
+
+    if isinstance(self.population, dict):
+      self.population = pd.DataFrame.from_dict(self.population)
+      self.n_pop = len(self.population)
+
     self.population['w'] = 1
 
     self.Sinit = Sinit
