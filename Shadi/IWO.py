@@ -12,7 +12,7 @@ from sklearn.model_selection import cross_val_score
 
 
 
-class InvasiveWeed(): # Define class with model name
+class IWO(): # Define class with model name
     def __init__(self, pmax, maxiter, delta_cap, num_exceeded_delta): # Initiate class with required parameters
         seed_array = [] # Initiate empty list to contain tuples of x and y seed coordinates
         for i in range(round(0.1*pmax)): # Initiate 10% of population max seeds with random x and y values between 0 and 10
@@ -251,7 +251,7 @@ class InvasiveWeed(): # Define class with model name
         return plt.show()
     
     def __str__(self):
-        return  f"InvasiveWeed(pmax = {self.pmax}, maxiter = {self.maxiter}, delta_cap = {self.delta_cap}, num_exceeded_delta = {self.num_exceeded_delta})\n"
+        return  f"IWO(pmax = {self.pmax}, maxiter = {self.maxiter}, delta_cap = {self.delta_cap}, num_exceeded_delta = {self.num_exceeded_delta})\n"
     
 
 # Perform grid search to find the best parameters based on the params dictionary
@@ -267,7 +267,7 @@ def grid_search(params):
         for maxiter in params['maxiter']: # For each max iteration value
             for delta_cap in params['delta_cap']: # For each delta_cap value
                 for num_exceeded_delta in params['num_exceeded_delta']: # For each num exeeded delta value
-                    model = InvasiveWeed(pmax, maxiter, delta_cap, num_exceeded_delta) # Iniiate model with current parameters
+                    model = IWO(pmax, maxiter, delta_cap, num_exceeded_delta) # Iniiate model with current parameters
                     best_fitness_score = model.return_best_fitness_() # Get best fitness score from the model
                     best_iteration = model.return_best_iteration_() # Get best iteration from the model ( Should be last/highest one )\
                     # Update grid search dictionary with results
@@ -294,7 +294,7 @@ def grid_search(params):
     # and best iteration, total runtime, best fitness and best seed from gridsearch
     print(f"\nGridsearch results:")
     print(f"\tBest model:")
-    print(f"\t\tInvasiveWeed(pmax = {best_params[0]}, maxiter = {best_params[1]}, delta_cap = {best_params[2]}, num_exceeded_delta = {best_params[3]})\n")
+    print(f"\t\tIWO(pmax = {best_params[0]}, maxiter = {best_params[1]}, delta_cap = {best_params[2]}, num_exceeded_delta = {best_params[3]})\n")
     print(f"\tStopped at iteration: {best_params[4]}\n")
     print(f"\tTotal runtime: {round(sum(runtimes),3)} seconds\n")
     print(f"\tBest fitness: {best_fitness}")
@@ -322,6 +322,6 @@ print("Running gridsearch with specified parameters to find the best seed...")
 best_params, best_fitness, best_round_fitnesses = grid_search(params)
 
 # plot best fitness score for each iteration in the best model from gridseach
-plt.plot(best_round_fitnesses)
-plt.title("Fitness scores from each iteration in the best model from gridseach")
-plt.show()
+# plt.plot(best_round_fitnesses)
+# plt.title("Fitness scores from each iteration in the best model from gridseach")
+# plt.show()
