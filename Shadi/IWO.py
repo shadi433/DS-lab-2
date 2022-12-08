@@ -13,16 +13,16 @@ from sklearn.model_selection import cross_val_score
 
 
 class IWO(): # Define class with model name
-    def __init__(self, pmax, maxiter, delta_cap, num_exceeded_delta): # Initiate class with required parameters
+    def __init__(self, fitness_function, n_pop, pop, Generations, delta_cap, num_exceeded_delta): # Initiate class with required parameters
         seed_array = [] # Initiate empty list to contain tuples of x and y seed coordinates
-        for i in range(round(0.1*pmax)): # Initiate 10% of population max seeds with random x and y values between 0 and 10
-            x = random.uniform(1, 10) # x = random float between 0 and 10
-            y = random.uniform(0.0001, 0.1) # y = random fload between 0 and 10
+        for i in range(n_pop):
+            x = pop[i][0] 
+            y = pop[i][1] 
             # Append the seed to the seed_array
             seed_array.append((x,y)) 
-
-        self.pmax = pmax
-        self.maxiter = maxiter
+        self.fitness_function = fitness_function
+        self.n_pop = n_pop
+        self.Generations = Generations
         self.delta_cap = delta_cap
         self.num_exceeded_delta = num_exceeded_delta
         
@@ -32,7 +32,7 @@ class IWO(): # Define class with model name
         c = 0 # Initiate int c for num_xceed_delta count
         
         # current_fitness_dict will contain the seed coordinates and their fitness scores
-        # for all seeds in our current population (capped to pmax)
+        # for all seeds in our current population (capped to n_pop)
         current_fitness_dict = {}
         self.current_fitness_dict = current_fitness_dict
         
@@ -50,7 +50,7 @@ class IWO(): # Define class with model name
         start_time = time.time() 
 
         
-        for i in range(1, maxiter+1): # Iterate n = maxiter times
+        for i in range(1, Generations+1): # Iterate n = Generations times
             fitness_array = self.get_fitness(seed_array) # Get fitness array for current seeds
             fitness_dict = dict(zip(seed_array, fitness_array)) # Make a dictionary containing seed tuple as key and their fitness as values
             
@@ -82,9 +82,9 @@ class IWO(): # Define class with model name
                 current_fitness_dict[seed] = fitness
 
             
-            # If population is bigger than the set pmax
+            # If population is bigger than the set n_pop
             # we need to trim it by keeping only best scoring seeds
-            if len(current_fitness_dict) > pmax:
+            if len(current_fitness_dict) > n_pop:
                     self.prune_seeds()
 
             
@@ -158,18 +158,8 @@ class IWO(): # Define class with model name
     def get_fitness(self,seed_array):
         fitness_array = [] # Initiate fitness array for new seeds
 
-        data = load_digits() 
-        n_samples = len(data.images)
-        X = data.images.reshape((n_samples, -1))
-        Y = data['target']
-
         for seed in seed_array:
-            # modle implementation
-            # seed[0] = C and seed[1] = gamma
-            clf = svm.SVC(kernel='rbf', C=seed[0], gamma=seed[1], random_state=42)
-            scores = cross_val_score(clf, X, Y, cv=5)
-            fitness = scores.mean()
-            
+            fitness = self.fitness_function(seed)
             # Append fitness to the fitness array
             fitness_array.append(fitness)
             
@@ -216,13 +206,13 @@ class IWO(): # Define class with model name
 
         return seed_children_dict
 
-    # Function to prune the seeds to the number of population maximum (pmax)
+    # Function to prune the seeds to the number of population maximum (n_pop)
     def prune_seeds(self):
         # Sort the current dictionary with seeds and their fitness based on fitness
         sorted_current_fitness_dict = {k: v for k, v in sorted(self.current_fitness_dict.items(), key=lambda item: item[1], reverse=True)}
         
-        # Prune the sorted dictionary to population max (pmax) and return as class fitness dictionary
-        self.current_fitness_dict = dict(list(sorted_current_fitness_dict.items())[0:self.pmax]) 
+        # Prune the sorted dictionary to population max (n_pop) and return as class fitness dictionary
+        self.current_fitness_dict = dict(list(sorted_current_fitness_dict.items())[0:self.n_pop]) 
     
     # Return best iteration from class
     def return_best_iteration_(self):
@@ -251,7 +241,7 @@ class IWO(): # Define class with model name
         return plt.show()
     
     def __str__(self):
-        return  f"IWO(pmax = {self.pmax}, maxiter = {self.maxiter}, delta_cap = {self.delta_cap}, num_exceeded_delta = {self.num_exceeded_delta})\n"
+        return  f"IWO(n_pop = {self.n_pop}, Generations = {self.Generations}, delta_cap = {self.delta_cap}, num_exceeded_delta = {self.num_exceeded_delta})\n"
     
 
 # Perform grid search to find the best parameters based on the params dictionary
@@ -263,15 +253,15 @@ def grid_search(params):
     c = 0 # Initiate int c to update the progress bar
     total.start() # Start progress bar
     best_seeds = [] # Initiate list for best seeds from the entire grid search
-    for pmax in params['pmax']: # For each population max value
-        for maxiter in params['maxiter']: # For each max iteration value
+    for n_pop in params['n_pop']: # For each population max value
+        for Generations in params['Generations']: # For each max iteration value
             for delta_cap in params['delta_cap']: # For each delta_cap value
                 for num_exceeded_delta in params['num_exceeded_delta']: # For each num exeeded delta value
-                    model = IWO(pmax, maxiter, delta_cap, num_exceeded_delta) # Iniiate model with current parameters
+                    model = IWO(n_pop, Generations, delta_cap, num_exceeded_delta) # Iniiate model with current parameters
                     best_fitness_score = model.return_best_fitness_() # Get best fitness score from the model
                     best_iteration = model.return_best_iteration_() # Get best iteration from the model ( Should be last/highest one )\
                     # Update grid search dictionary with results
-                    grid_search_dict[pmax, maxiter, delta_cap, num_exceeded_delta, best_iteration] = best_fitness_score 
+                    grid_search_dict[n_pop, Generations, delta_cap, num_exceeded_delta, best_iteration] = best_fitness_score 
                     runtimes.append(model.return_runtime_()) # Append runtime of current model to results dictionary
                     best_seeds.append(model.return_best_seed_()) # Append best seeds from best iteration from the model to the results dictionary
                     total.update(c) # Update progressbar with the int c value
@@ -294,7 +284,7 @@ def grid_search(params):
     # and best iteration, total runtime, best fitness and best seed from gridsearch
     print(f"\nGridsearch results:")
     print(f"\tBest model:")
-    print(f"\t\tIWO(pmax = {best_params[0]}, maxiter = {best_params[1]}, delta_cap = {best_params[2]}, num_exceeded_delta = {best_params[3]})\n")
+    print(f"\t\tIWO(n_pop = {best_params[0]}, Generations = {best_params[1]}, delta_cap = {best_params[2]}, num_exceeded_delta = {best_params[3]})\n")
     print(f"\tStopped at iteration: {best_params[4]}\n")
     print(f"\tTotal runtime: {round(sum(runtimes),3)} seconds\n")
     print(f"\tBest fitness: {best_fitness}")
@@ -302,14 +292,19 @@ def grid_search(params):
     
     # Return best params, best fitness and all fitnesses from best round from the function
     return best_params, best_fitness, best_round_fitnesses
-                
+    
+def get_best(self): #<------------------------coming back here
+    return best_seed
+
+def get_best_fit(): #<------------------------coming back here
+    return None
 
 ## Grid search for the best seed (minimum fitness) with different parameters
 
 # Dictionary with parameters to be run for gridsearch
 params = {
-    'pmax' : [10**2, 10**3, 2000], # Population max variable
-    'maxiter' : [15, 20], # Max iteration variable
+    'n_pop' : [10**2, 10**3, 2000], # Population max variable
+    'Generations' : [15, 20], # Max iteration variable
     'delta_cap' : [10**-6, 10**-8], # Define the change to be accounted for in num_exceeded_delta
     
     # This variable defines how many times the difference between the fitness score of the last iteration versus

@@ -58,9 +58,7 @@ def mutation(bitstring, r_mut):
 			bitstring[i] = 1 - bitstring[i]
 
 # genetic algorithm
-def GAO(fitness_function, bounds, n_bits, Generations, n_pop, r_cross, r_mut):
-	# initial population of random bitstring
-	pop = [randint(0, 2, n_bits*len(bounds)).tolist() for _ in range(n_pop)]
+def GAO(fitness_function, bounds, n_bits, Generations, n_pop, pop, r_cross, r_mut):
 	# keep track of best solution
 	best_para, best_fit = 0, fitness_function(decode(bounds, n_bits, pop[0]))
 	# enumerate generations
@@ -93,7 +91,7 @@ def GAO(fitness_function, bounds, n_bits, Generations, n_pop, r_cross, r_mut):
 				children.append(c)
 		# replace population
 		pop = children
-	return best_para
+	return best_para, best_fit
 
 # Ploting 
 # def plot():

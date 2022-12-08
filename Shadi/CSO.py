@@ -4,46 +4,34 @@ from math import gamma
 
 class CSO:
 
-    def __init__(self, fitness, n_pop=10, n=2, pa=0.25, beta=1.5, bound=None, 
+    def __init__(self, fitness_function, bound=None, n_pop=10, pop=[], n=2, pa=0.25, beta=1.5, 
                 plot=False, verbose=False, Generations=20):
 
         '''
         PARAMETERS:
         
-        fitness: A FUNCTION WHICH EVALUATES COST (OR THE FITNESS) VALUE
-        P: POPULATION SIZE
+        fitness_function: A FUNCTION WHICH EVALUATES COST (OR THE FITNESS) VALUE
+        bound: AXIS BOUND FOR EACH DIMENSION
+        n_pop: POPULATION SIZE
         n: TOTAL DIMENSIONS
         pa: ASSIGNED PROBABILITY
         beta: LEVY PARAMETER
-        bound: AXIS BOUND FOR EACH DIMENSION
-        X: PARTICLE POSITION OF SHAPE (P,n)
         Generations: MAXIMUM ITERATION
         best: GLOBAL BEST POSITION OF SHAPE (n,1)
         
         '''
-        self.fitness = fitness
-        self.P = n_pop 
+        self.fitness_function = fitness_function
+        self.bound = bound
+        self.n_pop = n_pop 
+        self.pop = pop
         self.n = n
-        self.Generations = Generations
         self.pa = pa
         self.beta = beta
-        self.bound = bound
         self.plot = plot
         self.verbose = verbose
+        self.Generations = Generations
 
-        # X = (U-L)*rand + L (U AND L ARE UPPER AND LOWER BOUND OF X)
-        # U AND L VARY BASED ON THE DIFFERENT DIMENSION OF X
-
-        self.X = []
-
-        if bound is not None:
-            for (U, L) in bound:
-                x = (U-L)*np.random.rand(n_pop,) + L 
-                self.X.append(x)
-            self.X = np.array(self.X).T
-        else:
-            self.X = np.random.randn(n_pop,n)
-            self.clip_X()
+        self.clip_pop()  #<-------------------------------------I don't think I need it
 
     def update_position_1(self):
         
@@ -63,21 +51,21 @@ class CSO:
 
         # DEFINING GLOBAL BEST SOLUTION BASED ON FITNESS VALUE
 
-        for i in range(self.P):
+        for i in range(self.n_pop):
             if i==0:
-                self.best = self.X[i,:].copy()
+                self.best = self.pop[i,:].copy()
             else:
-                self.best = self.optimum(self.best, self.X[i,:])
+                self.best = self.optimum(self.best, self.pop[i,:])
 
-        Xnew = self.X.copy()
-        for i in range(self.P):
+        Xnew = self.pop.copy()
+        for i in range(self.n_pop):
             Xnew[i,:] += np.random.randn(self.n)*0.01*S*(Xnew[i,:]-self.best)
             if self.bound is not None:
                 for j in range(self.n):
                     xmin, xmax = self.bound[j]
                     Xnew[:,j] = np.clip(Xnew[:,j], xmin, xmax)
-            self.X[i,:] = self.optimum(Xnew[i,:], self.X[i,:])
-            self.clip_X()
+            self.pop[i,:] = self.optimum(Xnew[i,:], self.pop[i,:])
+            self.clip_pop()
 
     def update_position_2(self):
         
@@ -86,12 +74,12 @@ class CSO:
         HOST BIRD CAN THROW EGG AWAY (ABANDON THE NEST) WITH FRACTION
         pa ∈ [0,1] (ALSO CALLED ASSIGNED PROBABILITY) AND BUILD A COMPLETELY 
         NEW NEST. FIRST WE CHOOSE A RANDOM NUMBER r ∈ [0,1] AND IF r < pa,
-        THEN 'X' IS SELECTED AND MODIFIED ELSE IT IS KEPT AS IT IS. 
+        THEN 'pop' IS SELECTED AND MODIFIED ELSE IT IS KEPT AS IT IS. 
         '''
 
-        Xnew = self.X.copy()
-        Xold = self.X.copy()
-        for i in range(self.P):
+        Xnew = self.pop.copy()
+        Xold = self.pop.copy()
+        for i in range(self.n_pop):
             d1,d2 = np.random.randint(0,5,2)
             for j in range(self.n):
                 r = np.random.rand()
@@ -101,23 +89,23 @@ class CSO:
                         for k in range(self.n):
                             xmin, xmax = self.bound[k]
                             Xnew[:,k] = np.clip(Xnew[:,k], xmin, xmax)
-            self.X[i,:] = self.optimum(Xnew[i,:], self.X[i,:])
+            self.pop[i,:] = self.optimum(Xnew[i,:], self.pop[i,:])
     
-    def optimum(self, best, particle_x):
+    def optimum(self, best, pop):
 
-        if self.fitness(best) < self.fitness(particle_x):
-            best = particle_x.copy()
+        if self.fitness_function(best) < self.fitness_function(pop):
+            best = pop.copy()
             
         return best
 
-    def clip_X(self):
+    def clip_pop(self):
 
         # IF BOUND IS SPECIFIED THEN CLIP 'X' VALUES SO THAT THEY ARE IN THE SPECIFIED RANGE
         
         if self.bound is not None:
             for i in range(self.n):
                 xmin, xmax = self.bound[i]
-                self.X[:,i] = np.clip(self.X[:,i], xmin, xmax)
+                self.pop[:,i] = np.clip(self.pop[:,i], xmin, xmax)
 
     def execute(self):
 
@@ -133,26 +121,32 @@ class CSO:
 
         for t in range(self.Generations):
             self.update_position_1()
-            self.clip_X()
+            self.clip_pop()
             self.update_position_2()
-            self.clip_X()
-            self.fitness_time.append(self.fitness(self.best))
+            self.clip_pop()
+            self.fitness_time.append(self.fitness_function(self.best))
             self.time.append(t)
             if self.verbose:
-                print('Iteration:  ',t,'| best global fitness (cost):',round(self.fitness(self.best),7))
+                print('Iteration:  ',t,'| best global fitness (cost):',round(self.fitness_function(self.best),7))
 
         print('\nOPTIMUM SOLUTION\n  >', np.round(self.best.reshape(-1),7).tolist())
-        print('\nOPTIMUM FITNESS\n  >', np.round(self.fitness(self.best),7))
+        print('\nOPTIMUM FITNESS\n  >', np.round(self.fitness_function(self.best),7))
         print()
         if self.plot:
             self.Fplot()
-        
-    # def Fplot(self):
 
-    #     # PLOTS GLOBAL FITNESS (OR COST) VALUE VS ITERATION GRAPH
+    def get_best(self):
+        return self.best  # <-------------------------------------maybe it needs reshape
+
+    def get_best_fit(self):
+        return np.round(self.fitness_function(self.best),7)
         
-    #     plt.plot(self.time, self.fitness_time)
-    #     plt.title('Fitness value vs Iteration')
-    #     plt.xlabel('Iteration')
-    #     plt.ylabel('Fitness value')
-    #     plt.show()
+    def Fplot(self):
+
+        # PLOTS GLOBAL FITNESS (OR COST) VALUE VS ITERATION GRAPH
+        
+        plt.plot(self.time, self.fitness_time)
+        plt.title('Fitness value vs Iteration')
+        plt.xlabel('Iteration')
+        plt.ylabel('Fitness value')
+        plt.show()
