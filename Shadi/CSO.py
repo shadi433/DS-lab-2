@@ -4,8 +4,7 @@ from math import gamma
 
 class CSO:
 
-    def __init__(self, fitness_function, bound=None, n_pop=10, pop=[], n=2, pa=0.25, beta=1.5, 
-                plot=False, verbose=False, Generations=20):
+    def __init__(self, fitness_function, bound=None, n_pop=10, pop=[], n=2, pa=0.25, beta=1.5):
 
         '''
         PARAMETERS:
@@ -16,8 +15,6 @@ class CSO:
         n: TOTAL DIMENSIONS
         pa: ASSIGNED PROBABILITY
         beta: LEVY PARAMETER
-        Generations: MAXIMUM ITERATION
-        best: GLOBAL BEST POSITION OF SHAPE (n,1)
         
         '''
         self.fitness_function = fitness_function
@@ -27,9 +24,6 @@ class CSO:
         self.n = n
         self.pa = pa
         self.beta = beta
-        self.plot = plot
-        self.verbose = verbose
-        self.Generations = Generations
 
         self.clip_pop()  #<-------------------------------------I don't think I need it
 
@@ -110,43 +104,19 @@ class CSO:
     def execute(self):
 
         '''
-        t: ITERATION NUMBER
-        fitness_time: LIST STORING FITNESS (OR COST) VALUE FOR EACH ITERATION
-        time: LIST STORING ITERATION NUMBER ([0,1,2,...])
-        
         THIS FUNCTION EXECUTES CUCKOO SEARCH ALGORITHM
         '''
-
-        self.fitness_time, self.time = [], []
-
-        for t in range(self.Generations):
-            self.update_position_1()
-            self.clip_pop()
-            self.update_position_2()
-            self.clip_pop()
-            self.fitness_time.append(self.fitness_function(self.best))
-            self.time.append(t)
-            if self.verbose:
-                print('Iteration:  ',t,'| best global fitness (cost):',round(self.fitness_function(self.best),7))
-
+        self.update_position_1()
+        self.clip_pop()
+        self.update_position_2()
+        self.clip_pop()
+            
         print('\nOPTIMUM SOLUTION\n  >', np.round(self.best.reshape(-1),7).tolist())
         print('\nOPTIMUM FITNESS\n  >', np.round(self.fitness_function(self.best),7))
         print()
-        if self.plot:
-            self.Fplot()
 
-    def get_best(self):
+    def get_pop(self):
         return self.best  # <-------------------------------------maybe it needs reshape
 
-    def get_best_fit(self):
+    def get_fit(self):
         return np.round(self.fitness_function(self.best),7)
-        
-    def Fplot(self):
-
-        # PLOTS GLOBAL FITNESS (OR COST) VALUE VS ITERATION GRAPH
-        
-        plt.plot(self.time, self.fitness_time)
-        plt.title('Fitness value vs Iteration')
-        plt.xlabel('Iteration')
-        plt.ylabel('Fitness value')
-        plt.show()

@@ -24,7 +24,7 @@ best_para = GAO(fitness_function, bounds, n_bits, Generations, n_pop, r_cross, r
 print('Done!')
 decoded = decode(bounds, n_bits, best_para)
 print('best_parameters:%s' % decoded)
-plot()
+# plot()
 
 #--------------------------------------------------------------------------------------------------------
 

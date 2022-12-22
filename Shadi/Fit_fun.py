@@ -2,6 +2,15 @@ from sklearn import svm
 from sklearn.datasets import load_digits
 from sklearn.model_selection import cross_val_score
 
+import numpy as np
+
+bounds = [[1.0, 10.0], [0.0001, 0.1]]        
+def clip_pop(pop):
+	# IF BOUND IS SPECIFIED THEN CLIP 'pop' VALUES SO THAT THEY ARE IN THE SPECIFIED RANGE
+	if bounds is not None:
+		for i in range(2):
+			xmin, xmax = bounds[i]
+			pop[:,i] = np.clip(pop[:,i], xmin, xmax)
 
 data = load_digits() 
 
