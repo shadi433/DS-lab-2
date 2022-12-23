@@ -1,5 +1,4 @@
 from GAO import *
-from ACO_from_scrach import *
 from CSO import *
 from IWO import *
 
@@ -24,13 +23,19 @@ def fitness_function(x):
 	return scores.mean()
 
 def bubble_sort(lst1, lst2):
-    # Iterate over the list and compare adjacent elements
-    for i in range(len(lst1) - 1):
-        # If the current element is greater than the next element, swap them
-        if lst1[i] > lst1[i + 1]:
-            lst1[i], lst1[i + 1] = lst1[i + 1], lst1[i]
-            lst2[i], lst2[i + 1] = lst2[i + 1], lst2[i]
-
+    # Set a flag to True to indicate that the list is not yet sorted
+    sorted = False
+    # Keep looping until the list is sorted
+    while not sorted:
+        # Set the flag to True to assume that the list is already sorted
+        sorted = True
+        # Iterate over the list and compare adjacent elements
+        for i in range(len(lst1) - 1):
+            # If the current element is smaller than the next element, swap them
+            if lst1[i] < lst1[i + 1]:
+                lst1[i], lst1[i + 1] = lst1[i + 1], lst1[i]
+                lst2[i], lst2[i + 1] = lst2[i + 1], lst2[i]
+                sorted = False
     # Return the sorted list
     return lst1, lst2
 
@@ -45,10 +50,19 @@ class JSI:
         self.Generations = kwargs.get('Generations', 10)
         self.n_pop = kwargs.get('n_pop', 10)
 
+        self.best_pop_from_all=[]
+        self.best_fit_from_all=[]
         self.n = len(self.bounds)
+
         self.pop = []
         if self.bounds is not None:
-            self.pop = np.random.randn(self.n_pop,self.n) # list of lists, for 2 dim: [[ , ], [ , ], [ , ],...,[ , ]]
+            for i in range(self.n_pop):
+                # Generate a random number from the interval [1.0, 10.0]
+                x = random.uniform(self.bounds[0])
+                # Generate a random number from the interval [0.0001, 0.1]
+                y = random.uniform(self.bounds[1])
+                # Add the sublist to the list of sublists
+                self.pop.append(x) # list of lists, for 2 dim: [[ , ], [ , ], [ , ],...,[ , ]]
             self.clip_pop()
         else:
             print('Please determine the bounds for the paremeters')
@@ -58,37 +72,56 @@ class JSI:
         if self.bounds is not None:
             for i in range(self.n):
                 xmin, xmax = self.bounds[i]
-                self.pop[:,i] = np.clip(self.pop[:,i], xmin, xmax)
+                self.pop[:][i] = np.clip(self.pop[:][i], xmin, xmax)
   
     def run(self):
         old_pop_GAO = self.pop
         old_pop_CSO = self.pop
-        pop_IWO = self.pop
+        old_pop_IWO = self.pop
+
 
         for i in range(self.Generations):
             
-            new_pop_GAO, fit_GAO = GAO(fitness_function=fitness_function, bounds=self.bounds, n_bits=16, n_pop=self.n_pop, pop=old_pop_GAO, r_cross=0.9, r_mut = 1.0 / (float(n_bits=16) * len(self.bounds)))
+            new_pop_GAO, fit_GAO = GAO(fitness_function=fitness_function, pop=old_pop_GAO)
+
             CSO_model = CSO(fitness_function=fitness_function, bounds=self.bounds, n_pop=self.n_pop, pop=old_pop_CSO, n=self.n)
             CSO_model.execute()
             new_pop_CSO = CSO_model.get_pop() 
             fit_CSO = CSO_model.get_fit() 
-            # IWO_model = IWO(fitness_function=fitness_function, n_pop=self.n_pop, pop=self.pop, Generations=self.Generations, delta_cap=10**-6, num_exceeded_delta=6)
-            # pop_IWO = IWO_model.get_best()
-            # fit_IWO = IWO_model.get_best_fit()
+    
+            new_pop_IWO, fit_IWO = IWO(dim=self.parameters, fitness_function=fitness_function, n_pop=self.n_pop, pop=old_pop_IWO, rinitial=2, rfinal=0.1, modulation_index=2, itermax=self.Generations, iter=i)
             
             sorted_fit_GAO, sorted_pop_GAO = bubble_sort(fit_GAO, new_pop_GAO)
             sorted_fit_CSO, sorted_pop_CSO = bubble_sort(fit_CSO, new_pop_CSO)
+            sorted_fit_IWO, sorted_pop_IWO = bubble_sort(fit_IWO, new_pop_IWO)
+
             sorted_pop_GAO[self.n_pop-1] = sorted_pop_CSO[0].copy()
+            sorted_pop_GAO[self.n_pop-2] = sorted_pop_IWO[0].copy()
+
             sorted_pop_CSO[self.n_pop-1] = sorted_pop_GAO[0].copy()
+            sorted_pop_CSO[self.n_pop-2] = sorted_pop_IWO[0].copy()
+
+            sorted_pop_IWO[self.n_pop-1] = sorted_pop_GAO[0].copy()
+            sorted_pop_IWO[self.n_pop-2] = sorted_pop_CSO[0].copy()
+
             old_pop_GAO = sorted_pop_GAO
             old_pop_CSO = sorted_pop_CSO
+            old_pop_IWO = sorted_pop_IWO
         
+        self.best_pop_from_all.append(sorted_pop_GAO[0])
+        self.best_fit_from_all.append(sorted_fit_GAO[0])
+
+        self.best_pop_from_all.append(sorted_pop_CSO[0])
+        self.best_fit_from_all.append(sorted_fit_CSO[0])
+
+        self.best_pop_from_all.append(sorted_pop_IWO[0])
+        self.best_fit_from_all.append(sorted_fit_IWO[0])
 
         
 
     def best_all(self):
 
-        
+        sorted_fit, sorted_pop = bubble_sort(self.best_fit_from_all, self.best_pop_from_all)
 
-        return best_algo, best_para, best_score
+        return sorted_pop[0], sorted_fit[0]
     

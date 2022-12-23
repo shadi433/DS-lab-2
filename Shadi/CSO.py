@@ -57,7 +57,7 @@ class CSO:
             if self.bound is not None:
                 for j in range(self.n):
                     xmin, xmax = self.bound[j]
-                    Xnew[:,j] = np.clip(Xnew[:,j], xmin, xmax)
+                    Xnew[:][i] = np.clip(Xnew[:][i], xmin, xmax)
             self.pop[i,:] = self.optimum(Xnew[i,:], self.pop[i,:])
             self.clip_pop()
 
@@ -82,7 +82,7 @@ class CSO:
                     if self.bound is not None:
                         for k in range(self.n):
                             xmin, xmax = self.bound[k]
-                            Xnew[:,k] = np.clip(Xnew[:,k], xmin, xmax)
+                            Xnew[:][k] = np.clip(Xnew[:][k], xmin, xmax)
             self.pop[i,:] = self.optimum(Xnew[i,:], self.pop[i,:])
     
     def optimum(self, best, pop):
@@ -99,7 +99,7 @@ class CSO:
         if self.bound is not None:
             for i in range(self.n):
                 xmin, xmax = self.bound[i]
-                self.pop[:,i] = np.clip(self.pop[:,i], xmin, xmax)
+                self.pop[:][i] = np.clip(self.pop[:][i], xmin, xmax)
 
     def execute(self):
 
