@@ -46,32 +46,28 @@ class JSI:
     def __init__(self, **kwargs):
         self.model = kwargs.get('model', 'svm')
         self.parameters = kwargs.get('parameters', 2)
-        self.bounds = kwargs.get('bounds', [[1.0, 10.0], [0.0001, 0.1]])
+        self.intervals = kwargs.get('intervals', [[1.0, 10.0], [0.0001, 0.1]])
         self.Generations = kwargs.get('Generations', 10)
         self.n_pop = kwargs.get('n_pop', 10)
 
         self.best_pop_from_all=[]
         self.best_fit_from_all=[]
-        self.n = len(self.bounds)
+        self.n = len(self.intervals)
 
         self.pop = []
-        if self.bounds is not None:
+        if self.intervals is not None:
             for i in range(self.n_pop):
-                # Generate a random number from the interval [1.0, 10.0]
-                x = random.uniform(self.bounds[0])
-                # Generate a random number from the interval [0.0001, 0.1]
-                y = random.uniform(self.bounds[1])
-                # Add the sublist to the list of sublists
+                x = [random.uniform(interval[0], interval[1]) for interval in self.intervals]
                 self.pop.append(x) # list of lists, for 2 dim: [[ , ], [ , ], [ , ],...,[ , ]]
             self.clip_pop()
         else:
-            print('Please determine the bounds for the paremeters')
+            print('Please determine the intervals for the paremeters')
         
     def clip_pop(self):
         # IF BOUND IS SPECIFIED THEN CLIP 'pop' VALUES SO THAT THEY ARE IN THE SPECIFIED RANGE
-        if self.bounds is not None:
+        if self.intervals is not None:
             for i in range(self.n):
-                xmin, xmax = self.bounds[i]
+                xmin, xmax = self.intervals[i]
                 self.pop[:][i] = np.clip(self.pop[:][i], xmin, xmax)
   
     def run(self):
@@ -82,13 +78,10 @@ class JSI:
 
         for i in range(self.Generations):
             
-            new_pop_GAO, fit_GAO = GAO(fitness_function=fitness_function, pop=old_pop_GAO)
+            new_pop_GAO, fit_GAO = GAO(fitness_function=fitness_function, pop=old_pop_GAO, intervals=self.intervals)
 
-            CSO_model = CSO(fitness_function=fitness_function, bounds=self.bounds, n_pop=self.n_pop, pop=old_pop_CSO, n=self.n)
-            CSO_model.execute()
-            new_pop_CSO = CSO_model.get_pop() 
-            fit_CSO = CSO_model.get_fit() 
-    
+            new_pop_CSO, fit_CSO = CSO(fitness_function=fitness_function, nest=old_pop_CSO, n_pop=self.n_pop, intervals=self.intervals, pa=0.25, beta=1.5)
+
             new_pop_IWO, fit_IWO = IWO(dim=self.parameters, fitness_function=fitness_function, n_pop=self.n_pop, pop=old_pop_IWO, rinitial=2, rfinal=0.1, modulation_index=2, itermax=self.Generations, iter=i)
             
             sorted_fit_GAO, sorted_pop_GAO = bubble_sort(fit_GAO, new_pop_GAO)

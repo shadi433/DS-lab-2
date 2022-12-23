@@ -47,6 +47,8 @@ def IWO(dim, fitness_function, n_pop, pop, rinitial, rfinal, modulation_index, i
         population = population[:n_pop]
         fitness = fitness[:n_pop]
 
+    print('finish with IWO')
+
     return population, fitness
 
 def calculate_num_seeds(fitness, fitness_values):
