@@ -1,6 +1,11 @@
 import random
 import math
 
+def clip_pop(pop, intervals):
+    # IF BOUND IS SPECIFIED THEN CLIP 'pop' VALUES SO THAT THEY ARE IN THE SPECIFIED RANGE
+    return [[random.uniform(lower_bound, upper_bound) if not lower_bound <= x <= upper_bound else x for x, (lower_bound, upper_bound) in zip(sublist, intervals)] for sublist in pop]
+
+
 def levy_flight(position, beta, intervals):
     """Performs a Levy flight move from the current position."""
     # Calculate sigma value using the formula specified in the algorithm
@@ -17,14 +22,7 @@ def levy_flight(position, beta, intervals):
         step = u / abs(v) ** (1 / beta)
         steps.append(step)
     # Return new position by adding the steps to the current position and make sure that each value did not pass thier interval
-    new_position = []
-    for x, step, interval in zip(position, steps, intervals):
-        new_x = x + step
-        if new_x < interval[0]:
-            new_x = interval[0]
-        elif new_x > interval[1]:
-            new_x = interval[1]
-        new_position.append(new_x)
+    new_position = [x + step for x, step in zip(position, steps)]
 
     return new_position
 
@@ -47,11 +45,13 @@ def CSO(fitness_function, nest, n_pop, intervals, pa=0.25, beta=1.5):
     for j in range(len(nest)):
         # Perform a Levy flight with probability (1 - pa)
         if random.random() > pa: 
-            new_nest.append(levy_flight(nest[j], beta))
+            new_nest.append(levy_flight(nest[j], beta, intervals))
         # Abandon the old position and generate a new random position with probability pa
         else: 
             new_position = [random.uniform(interval[0], interval[1]) for interval in intervals]
             new_nest.append(new_position)
+    # we make sure that the values are in the specified range
+    new_nest = clip_pop(new_nest, intervals)
     # Add the new positions to the list of positions
     nest.extend(new_nest)
     # Sort the positions by their fitness (as determined by the cost function

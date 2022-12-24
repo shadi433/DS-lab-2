@@ -1,7 +1,14 @@
 import random
+import numpy as np
 #This code defines a IWO() function that takes in several parameters:
 
-def IWO(dim, fitness_function, n_pop, pop, rinitial, rfinal, modulation_index, itermax, iter):
+def clip_pop(pop, intervals):
+    # IF BOUND IS SPECIFIED THEN CLIP 'pop' VALUES SO THAT THEY ARE IN THE SPECIFIED RANGE
+    return [[random.uniform(lower_bound, upper_bound) if not lower_bound <= x <= upper_bound else x for x, (lower_bound, upper_bound) in zip(sublist, intervals)] for sublist in pop]
+
+
+
+def IWO(dim, fitness_function, n_pop, pop, intervals, rinitial, rfinal, modulation_index, itermax, iter):
     '''
     dim: The dimensionality of the search space
     fitness_function: The objective function to be optimized
@@ -13,7 +20,7 @@ def IWO(dim, fitness_function, n_pop, pop, rinitial, rfinal, modulation_index, i
     # Initialize the population of weeds
     '''
 
-    population = pop
+    population = pop.copy()
 
     # Evaluate the fitness of each weed
     fitness = [fitness_function(weed) for weed in population]
@@ -35,17 +42,18 @@ def IWO(dim, fitness_function, n_pop, pop, rinitial, rfinal, modulation_index, i
         # Update the position of the seed
         seeds[i] = [x + y for x, y in zip(seed, displacement)]
 
-    #  Perform competitive exclusion if the number of weeds exceeds the population size
-    if len(seeds) > n_pop:
-        # Combine the seeds and the original population
-        population += seeds
-        # Calculate the fitness of each plant
-        fitness = [fitness_function(plant) for plant in population]
-        # Sort the plants by fitness
-        population = [x for _, x in sorted(zip(fitness, population), reverse=True)]
-        # Keep only the top n_pop plants
-        population = population[:n_pop]
-        fitness = fitness[:n_pop]
+    # Perform competitive exclusion if the number of weeds exceeds the population size
+    # Combine the seeds and the original population
+    population += seeds
+    # we make sure that the values are in the specified range
+    population = clip_pop(population, intervals)
+    # Calculate the fitness of each plant
+    fitness = [fitness_function(plant) for plant in population]
+    # Sort the plants by fitness
+    population = [x for _, x in sorted(zip(fitness, population), reverse=True)]
+    # Keep only the top n_pop plants
+    population = population[:n_pop]
+    fitness = fitness[:n_pop]
 
     print('finish with IWO')
 
@@ -56,5 +64,5 @@ def calculate_num_seeds(fitness, fitness_values):
     # and the fitness of the other weeds in the population
     min_fitness = min(fitness_values)
     max_fitness = max(fitness_values)
-    num_seeds = (fitness - min_fitness) / (max_fitness - min_fitness)
+    num_seeds = int((fitness - min_fitness) / (max_fitness - min_fitness))
     return num_seeds

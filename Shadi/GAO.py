@@ -22,7 +22,6 @@ def selection(population, fitnesses):
 # Run the genetic algorithm to find the optimal solution
 def GAO(fitness_function, pop, intervals):
 	population = pop
-	print(pop)
 	fitnesses = [fitness_function(individual) for individual in population]
 	population = selection(population, fitnesses)
 	population = [crossover(random.choice(population), random.choice(population)) for _ in range(len(population))]
