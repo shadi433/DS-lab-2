@@ -15,12 +15,15 @@ X = data.images.reshape((n_samples, -1))
 Y = data['target']
 
 # modle implementation
-def fitness_function(x):  
+def fitness_function1(x):
 	# x[0] = C and x[1] = gamma
 	clf = svm.SVC(kernel='rbf', C=x[0], gamma=x[1], random_state=42)
 	scores = cross_val_score(clf, X, Y, cv=5)
 	
 	return scores.mean()
+
+def fitness_function2(x):
+	pass
 
 def bubble_sort(lst1, lst2):
     # Set a flag to True to indicate that the list is not yet sorted
@@ -53,6 +56,11 @@ class JSI:
         self.Generations = kwargs.get('Generations', 10)
         self.n_pop = kwargs.get('n_pop', 10)
 
+        if self.model == 'svm':
+            self.fitness_function = fitness_function1
+        elif self.model == 'decision tree':
+            self.fitness_function = fitness_function2
+
         self.best_pop_from_all=[]
         self.best_fit_from_all=[]
         self.model_name=[]
@@ -76,9 +84,9 @@ class JSI:
         for i in range(self.Generations):
             print('iter:',i)
             
-            new_pop_GAO, fit_GAO = GAO(fitness_function=fitness_function, pop=old_pop_GAO, intervals=self.intervals)
-            new_pop_CSO, fit_CSO = CSO(fitness_function=fitness_function, nest=old_pop_CSO, n_pop=self.n_pop, intervals=self.intervals, pa=0.25, beta=1.5)
-            new_pop_IWO, fit_IWO = IWO(dim=self.parameters, fitness_function=fitness_function, n_pop=self.n_pop, pop=old_pop_IWO, intervals=self.intervals, rinitial=2, rfinal=0.1, modulation_index=2, itermax=self.Generations, iter=i)
+            new_pop_GAO, fit_GAO = GAO(fitness_function=self.fitness_function, pop=old_pop_GAO, intervals=self.intervals)
+            new_pop_CSO, fit_CSO = CSO(fitness_function=self.fitness_function, nest=old_pop_CSO, n_pop=self.n_pop, intervals=self.intervals, pa=0.25, beta=1.5)
+            new_pop_IWO, fit_IWO = IWO(dim=self.parameters, fitness_function=self.fitness_function, n_pop=self.n_pop, pop=old_pop_IWO, intervals=self.intervals, rinitial=2, rfinal=0.1, modulation_index=2, itermax=self.Generations, iter=i)
 
             sorted_fit_GAO, new_pop_GAO = bubble_sort(fit_GAO, new_pop_GAO)
             # print('old_pop_GAO:', new_pop_GAO)
