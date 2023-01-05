@@ -8,12 +8,18 @@ from sklearn.model_selection import cross_val_score
 
 # %%
 class ABC():
-  def __init__(self, bounds, n_pop, cycles, fitness_function, population=None):
+  def __init__(self, bounds, n_pop, cycles, fitness_function, population=None, old_pop = None):
     self.bounds = bounds
     self.n_pop = n_pop
     self.cycles = cycles
     self.fitness_function = fitness_function
-    self.population = population.copy()
+    self.old_pop = old_pop.copy()
+    
+    if type(old_pop)==list:
+      self.population = pd.DataFrame(self.old_pop, columns=bounds.keys())
+      self.population['Fit'] = [self.fitness_function(x) for x in list(zip(*self.old_pop))]
+    else:
+      self.population = population.copy()
     
     self.population['trial'] = 0
     self.population['prob'] = 0
@@ -49,7 +55,7 @@ class ABC():
         continue
       
       self.produce_new_sol_scout(scout_indexes)
-    return self.best_para, self.best_fit
+    return self.population[self.bounds.keys()].values.tolist(), self.population['Fit'].values.tolist()
 
   def produce_new_sol(self, onlookers=False):
     for i, _ in self.population.iterrows():
