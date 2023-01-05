@@ -52,7 +52,7 @@ class JSI:
     def __init__(self, **kwargs):
         self.model = kwargs.get('model', 'svm')
         self.parameters = kwargs.get('parameters', 2)
-        self.intervals = kwargs.get('intervals', [[1.0, 10.0], [0.0001, 0.1]])
+        self.intervals = kwargs.get('intervals', [[1.0, 100.0], [0.0001, 0.1]])
         self.Generations = kwargs.get('Generations', 10)
         self.n_pop = kwargs.get('n_pop', 10)
 
@@ -66,7 +66,8 @@ class JSI:
         self.model_name=[]
         self.n = len(self.intervals)
 
-        self.pop = []
+        #initialize the population
+        self.pop = [] 
         if self.intervals is not None:
             for i in range(self.n_pop):
                 x = [random.uniform(interval[0], interval[1]) for interval in self.intervals]
@@ -84,20 +85,20 @@ class JSI:
         for i in range(self.Generations):
             print('iter:',i)
             
+            #new_pop_Algo, fit_Algo = Algo(...., pop=old_pop_Algo,...)
+            #[ , , , ...], [ , , , ...] = Algo(..., pop = [ , , , ...], ...)
+
             new_pop_GAO, fit_GAO = GAO(fitness_function=self.fitness_function, pop=old_pop_GAO, intervals=self.intervals)
             new_pop_CSO, fit_CSO = CSO(fitness_function=self.fitness_function, nest=old_pop_CSO, n_pop=self.n_pop, intervals=self.intervals, pa=0.25, beta=1.5)
             new_pop_IWO, fit_IWO = IWO(dim=self.parameters, fitness_function=self.fitness_function, n_pop=self.n_pop, pop=old_pop_IWO, intervals=self.intervals, rinitial=2, rfinal=0.1, modulation_index=2, itermax=self.Generations, iter=i)
-
+            
+            #sorting the fitness with the corresponding population
             sorted_fit_GAO, new_pop_GAO = bubble_sort(fit_GAO, new_pop_GAO)
-            # print('old_pop_GAO:', new_pop_GAO)
-            # print('sorted_fit_GAO:', sorted_fit_GAO)
             sorted_fit_CSO, new_pop_CSO = bubble_sort(fit_CSO, new_pop_CSO)
-            # print('old_pop_CSO:', new_pop_CSO)
-            # print('sorted_fit_CSO:', sorted_fit_CSO)
             sorted_fit_IWO, new_pop_IWO = bubble_sort(fit_IWO, new_pop_IWO)
-            # print('old_pop_IWO:', new_pop_IWO)
-            # print('sorted_fit_IWO:', sorted_fit_IWO)
 
+            #change the n-1 worst nembers in each of the n population with the 
+            #best member from each of the n-1 other population
             new_pop_GAO[self.n_pop-1] = new_pop_CSO[0].copy()
             new_pop_GAO[self.n_pop-2] = new_pop_IWO[0].copy()
 
@@ -108,12 +109,11 @@ class JSI:
             new_pop_IWO[self.n_pop-2] = new_pop_CSO[0].copy()
 
             old_pop_GAO = new_pop_GAO
-            # print('new_pop_GAO: ',old_pop_GAO)
             old_pop_CSO = new_pop_CSO
-            # print('new_pop_CSO: ',old_pop_CSO)
             old_pop_IWO = new_pop_IWO
-            # print('new_pop_IWO: ',old_pop_IWO)
-        
+
+            #end of for loop
+        #after the loop finishes store the best fitness and the corresponding population of each algorithm
         self.best_pop_from_all.append(new_pop_GAO[0])
         self.best_fit_from_all.append(sorted_fit_GAO[0])
         self.model_name.append('GAO')
@@ -127,10 +127,11 @@ class JSI:
         self.model_name.append('IWO')
 
         
-
-    def best_all(self):
-
+    # after haveing the best fitness and the corresponding population of each algorithm
+    # this function will return the best among all
+    def best_all(self): 
+        # 3 lists and sortin based on the second one (fitness): [  ,  ,  ] , [  ,  ,  ], [  ,  ,  ]
         best = sorted(zip(self.best_pop_from_all, self.best_fit_from_all, self.model_name), key=lambda x: x[1], reverse=True)
-
+        # best will be like: [( , , ),( , , ),( , , )]
         return best[0][0], best[0][1], best[0][2]
     
