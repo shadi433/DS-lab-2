@@ -19,9 +19,9 @@ def fitness_function1(x):
 	# x[0] = C and x[1] = gamma
 	clf = svm.SVC(kernel='rbf', C=x[0], gamma=x[1], random_state=42)
 	scores = cross_val_score(clf, X, Y, cv=5)
-	
 	return scores.mean()
 
+# possibility to add more functions and models
 def fitness_function2(x):
 	pass
 
@@ -60,6 +60,8 @@ class JSI:
             self.fitness_function = fitness_function1
         elif self.model == 'decision tree':
             self.fitness_function = fitness_function2
+        elif self.model =='model_name':
+            pass #possibility to add more models
 
         self.best_pop_from_all=[]
         self.best_fit_from_all=[]
