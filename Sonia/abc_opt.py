@@ -7,7 +7,7 @@ from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score
 
 # %%
-class ABC():
+class ABC_OPT:
   def __init__(self, bounds, n_pop, cycles, fitness_function, population=None, old_pop = None):
     self.bounds = bounds
     self.n_pop = n_pop
@@ -15,9 +15,9 @@ class ABC():
     self.fitness_function = fitness_function
     self.old_pop = old_pop.copy()
     
-    if type(old_pop)==list:
-      self.population = pd.DataFrame(self.old_pop, columns=bounds.keys())
-      self.population['Fit'] = [self.fitness_function(x) for x in list(zip(*self.old_pop))]
+    if type(self.old_pop)==list:
+      self.population = pd.DataFrame(self.old_pop, columns=self.bounds.keys())
+      self.population['Fit'] = [self.fitness_function(x) for x in self.old_pop]
     else:
       self.population = population.copy()
     

@@ -17,9 +17,9 @@ class FSS:
     
     self.old_pop = old_pop.copy()
     
-    if type(old_pop)==list:
-      self.population = pd.DataFrame(self.old_pop, columns=bounds.keys())
-      self.population['Fit'] = [self.fitness_function(x) for x in list(zip(*self.old_pop))]
+    if type(self.old_pop)==list:
+      self.population = pd.DataFrame(self.old_pop, columns=self.bounds.keys())
+      self.population['Fit'] = [self.fitness_function(x) for x in self.old_pop]
     else:
       self.population = population.copy()
 
