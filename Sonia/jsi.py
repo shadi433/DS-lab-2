@@ -95,16 +95,16 @@ class swarm:
     def run(self):
         p = self.population.copy()
         #first iteration
-        abc = ABC(self.bounds, self.n_pop, 10, self.fitness_function, p)
+        abc = ABC(self.bounds, self.n_pop, 10, self.fitness_function, population=p)
         abc()
 
-        de = DE(self.params.cr, self.bounds, self.n_pop, 10, self.fitness_function, p)
+        de = DE(self.params.cr, self.bounds, self.n_pop, 10, self.fitness_function, population=p)
         de()
 
-        g = GSO(self.params.rho, self.params.gamma, self.params.s, self.params.rs, self.params.r0, self.params.betta, self.params.l0, self.bounds, self.n_pop, 10, self.fitness_function, p)
+        g = GSO(self.params.rho, self.params.gamma, self.params.s, self.params.rs, self.params.r0, self.params.betta, self.params.l0, self.bounds, self.n_pop, 10, self.fitness_function, population=p)
         g()
 
-        fss = FSS(self.params.Sinit, self.params.Sfinal, self.bounds, self.n_pop, 10, self.fitness_function, p)
+        fss = FSS(self.params.Sinit, self.params.Sfinal, self.bounds, self.n_pop, 10, self.fitness_function, population=p)
         fss()
         
         #the first proposed approach
@@ -116,13 +116,13 @@ class swarm:
         # f.append(("f",)+ l)
         self.best_para_rnd = []
         for i in range(2):
-            self.abc_rnd = ABC(self.bounds, self.n_pop, 1, self.fitness_function, self.generation_rnd(self.abc_rnd))
+            self.abc_rnd = ABC(self.bounds, self.n_pop, 1, self.fitness_function, population=self.generation_rnd(self.abc_rnd))
             self.best_para_rnd.append(("abc",)+ self.abc_rnd())
-            self.de_rnd = DE(self.params.cr, self.bounds, self.n_pop, 1, self.fitness_function, self.generation_rnd(self.de_rnd))
+            self.de_rnd = DE(self.params.cr, self.bounds, self.n_pop, 1, self.fitness_function, population=self.generation_rnd(self.de_rnd))
             self.best_para_rnd.append(("de",)+ self.de_rnd())
-            self.g_rnd = GSO(self.params.rho, self.params.gamma, self.params.s, self.params.rs, self.params.r0, self.params.betta, self.params.l0, self.bounds, self.n_pop, 1, self.fitness_function, self.generation_rnd(self.g_rnd))
+            self.g_rnd = GSO(self.params.rho, self.params.gamma, self.params.s, self.params.rs, self.params.r0, self.params.betta, self.params.l0, self.bounds, self.n_pop, 1, self.fitness_function, population=self.generation_rnd(self.g_rnd))
             self.best_para_rnd.append(("gso",)+ self.g_rnd())
-            self.fss_rnd = FSS(self.params.Sinit, self.params.Sfinal, self.bounds, self.n_pop, 1, self.fitness_function, self.generation_rnd(self.fss_rnd))
+            self.fss_rnd = FSS(self.params.Sinit, self.params.Sfinal, self.bounds, self.n_pop, 1, self.fitness_function, population=self.generation_rnd(self.fss_rnd))
             self.best_para_rnd.append(("fss",)+ self.fss_rnd())
             
         #the second proposed approach
@@ -133,13 +133,13 @@ class swarm:
         
         self.best_para = []
         for i in range(2):
-            self.abc_best = ABC(self.bounds, self.n_pop, 1, self.fitness_function, self.generation_best(self.abc_best))
+            self.abc_best = ABC(self.bounds, self.n_pop, 1, self.fitness_function, population=self.generation_best(self.abc_best))
             self.best_para.append(("abc",)+ self.abc_best())
-            self.de_best = DE(self.params.cr, self.bounds, self.n_pop, 1, self.fitness_function, self.generation_best(self.de_best))
+            self.de_best = DE(self.params.cr, self.bounds, self.n_pop, 1, self.fitness_function, population=self.generation_best(self.de_best))
             self.best_para.append(("de",)+ self.de_best())
-            self.g_best = GSO(self.params.rho, self.params.gamma, self.params.s, self.params.rs, self.params.r0, self.params.betta, self.params.l0, self.bounds, self.n_pop, 1, self.fitness_function, self.generation_best(self.g_best))
+            self.g_best = GSO(self.params.rho, self.params.gamma, self.params.s, self.params.rs, self.params.r0, self.params.betta, self.params.l0, self.bounds, self.n_pop, 1, self.fitness_function, population=self.generation_best(self.g_best))
             self.best_para.append(("gso",)+ self.g_best())
-            self.fss_best = FSS(Sinit, Sfinal, self.bounds, self.n_pop, 1, self.fitness_function, self.generation_best(self.fss_best))
+            self.fss_best = FSS(Sinit, Sfinal, self.bounds, self.n_pop, 1, self.fitness_function, population=self.generation_best(self.fss_best))
             self.best_para.append(("fss",)+ self.fss_best())
             
     def best_all(self):

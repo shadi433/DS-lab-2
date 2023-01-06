@@ -14,12 +14,14 @@ class GSO:
     self.n_pop = n_pop
     self.cycles = cycles
     self.fitness_function = fitness_function
+    self.ret1 = False
     
     self.old_pop = old_pop.copy()
     
     if type(self.old_pop)==list:
       self.population = pd.DataFrame(self.old_pop, columns=self.bounds.keys())
       self.population['Fit'] = [self.fitness_function(x) for x in self.old_pop]
+      self.ret1 = True
     else:
       self.population = population.copy()
       
@@ -58,7 +60,12 @@ class GSO:
         self.update_nei_rng(idx)
     
     # return self.best_para, self.best_fit
-    return self.population[self.bounds.keys()].values.tolist(), self.population['Fit'].values.tolist()
+    # return self.population[self.bounds.keys()].values.tolist(), self.population['Fit'].values.tolist()
+    
+    if self.ret1 == True: 
+      return self.population[self.bounds.keys()].values.tolist(), self.population['Fit'].values.tolist()
+    else: 
+      return self.best_para, self.best_fit
   
   def update_luciferin(self):
     for i in range(self.n_pop):

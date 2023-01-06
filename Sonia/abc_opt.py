@@ -14,10 +14,12 @@ class ABC_OPT:
     self.cycles = cycles
     self.fitness_function = fitness_function
     self.old_pop = old_pop.copy()
+    self.ret1 = False
     
     if type(self.old_pop)==list:
       self.population = pd.DataFrame(self.old_pop, columns=self.bounds.keys())
       self.population['Fit'] = [self.fitness_function(x) for x in self.old_pop]
+      self.ret1 = True
     else:
       self.population = population.copy()
     
@@ -55,7 +57,10 @@ class ABC_OPT:
         continue
       
       self.produce_new_sol_scout(scout_indexes)
-    return self.population[self.bounds.keys()].values.tolist(), self.population['Fit'].values.tolist()
+    if self.ret1 == True: 
+      return self.population[self.bounds.keys()].values.tolist(), self.population['Fit'].values.tolist()
+    else: 
+      return self.best_para, self.best_fit
 
   def produce_new_sol(self, onlookers=False):
     for i, _ in self.population.iterrows():

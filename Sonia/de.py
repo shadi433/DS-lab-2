@@ -14,10 +14,12 @@ class DE:
     self.cycles = cycles
     self.fitness_function = fitness_function
     self.old_pop = old_pop.copy()
+    self.ret1 = False
     
     if type(self.old_pop)==list:
       self.population = pd.DataFrame(self.old_pop, columns=self.bounds.keys())
       self.population['Fit'] = [self.fitness_function(x) for x in self.old_pop]
+      self.ret1 = True
     else:
       self.population = population.copy()
     
@@ -51,7 +53,12 @@ class DE:
         self.keep_track(self.population['Fit'].idxmax())
 
     #return self.best_para, self.best_fit
-    return self.population[self.bounds.keys()].values.tolist(), self.population['Fit'].values.tolist()
+    # return self.population[self.bounds.keys()].values.tolist(), self.population['Fit'].values.tolist()
+    
+    if self.ret1 == True: 
+      return self.population[self.bounds.keys()].values.tolist(), self.population['Fit'].values.tolist()
+    else: 
+      return self.best_para, self.best_fit
 
   def generate_mutant(self, i, population):
     #parent vector
